@@ -8,6 +8,7 @@ import './styles.css'
 const Torus = () => {
 	const $material = useRef()
 	const $sphere = useRef()
+	const $transform = useRef()
 
 	const { uThresholdMin, uThresholdMax } = useControls({
 		uThresholdMin: {
@@ -58,7 +59,7 @@ const Torus = () => {
 			
       void main() {
         vec3 pos = position + normal * displace(position);
-				float dist = smoothstep(uThresholdMin, uThresholdMax, 1.-distance(uMorph, pos));
+				float dist = smoothstep(uThresholdMin, uThresholdMax, 1.-distance(uMorph, position));
         vDist = dist;
 
         vec4 worldPosition = modelMatrix * vec4( pos, 1.0 );
@@ -66,7 +67,7 @@ const Torus = () => {
         vec3 worldNormal = normalize ( mat3( modelMatrix[0].xyz, modelMatrix[1].xyz, modelMatrix[2].xyz ) * normal );
 				
 				// Thanks to @MarcoFugaro
-				float offset = 0.1;
+				float offset = 0.01;
 				vec3 tangent = orthogonal(normal);
 				vec3 bitangent = normalize(cross(normal, tangent));
 				vec3 neighbour1 = position + tangent * offset;
@@ -120,8 +121,15 @@ const Torus = () => {
 
 	useFrame(({ clock }) => {
 		if ($material.current) {
-			// $material.current.uniforms.uTime.value = clock.getElapsedTime()
 			$material.current.uniforms.uMorph.value = $sphere.current.parent.position
+			/* const time = clock.getElapsedTime()
+			const x = Math.sin(time)*1.5
+			const y = Math.sin(time*2.5)*1.5
+			const z = Math.sin(time*2)*.7
+			$material.current.uniforms.uMorph.value = new Vector3(x, y, z)
+			$sphere.current.position.x = x
+			$sphere.current.position.y = y
+			$sphere.current.position.z = z */
 		}
 	})
 
@@ -129,10 +137,10 @@ const Torus = () => {
 
 	return (
 		<>
-			<TransformControls position={[-1, 0.4, 0.4]}>
+			<TransformControls ref={$transform}>
 				<mesh ref={$sphere}>
-					<sphereGeometry args={[0.01, 32, 32]} />
-					<meshBasicMaterial />
+					<icosahedronGeometry args={[0.05, 2]} />
+					<meshBasicMaterial color={'grey'} />
 				</mesh>
 			</TransformControls>
 			<mesh>
@@ -153,16 +161,14 @@ export default function App() {
 
 	const handleKeyDown = (e) => {
 		if (e.key === 'r') {
-			setOrbitEnabled(true)
+			setOrbitEnabled(!orbitEnabled)
 		}
 	}
 
 	useEffect(() => {
 		window.addEventListener('keydown', handleKeyDown)
-		window.addEventListener('keyup', () => {
-			setOrbitEnabled(false)
-		})
-	}, [])
+		return () => window.removeEventListener('keydown', handleKeyDown)
+	}, [orbitEnabled])
 
 	return (
 		<>
@@ -179,7 +185,7 @@ export default function App() {
 				/>
 				<Torus />
 			</Canvas>
-			<div className="hint">Press R to rotate</div>
+			<div className="hint">Press <strong>R</strong> to {orbitEnabled ? 'disable' : 'enable'} rotation</div>
 		</>
 	)
 }

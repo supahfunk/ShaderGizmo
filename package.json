@@ -1,11 +1,12 @@
 {
   "name": "react",
   "version": "1.0.0",
-  "description": "React example starter project",
+  "description": "Shader Material Gizmo",
   "keywords": [
     "react",
     "starter"
   ],
+  "homepage": ".",
   "main": "src/index.js",
   "dependencies": {
     "@react-three/drei": "9.36.0",
