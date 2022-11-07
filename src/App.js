@@ -73,7 +73,7 @@ const Torus = () => {
         vec3 worldNormal = normalize ( mat3( modelMatrix[0].xyz, modelMatrix[1].xyz, modelMatrix[2].xyz ) * normal );
 				
 				// Thanks to @MarcoFugaro
-				float offset = 0.001;
+				float offset = 0.1;
 				vec3 tangent = orthogonal(normal);
 				vec3 bitangent = normalize(cross(normal, tangent));
 				vec3 neighbour1 = position + tangent * offset;
@@ -105,14 +105,13 @@ const Torus = () => {
         varying vec3 vRefract;
         
         void main() {
-          // float directionalLightWeighting = max( dot( normalize( vNormal ), uDirLightPos ), 0.0);
-          // vec3 lightWeighting = uAmbientLightColor + uDirLightColor * directionalLightWeighting;
-          // float intensity = smoothstep( - 0.5, 1.0, pow( length(lightWeighting), 20.0 ) );
-          // intensity += length(lightWeighting) * 0.2;
-          // intensity = intensity * 0.2 + 0.3 + 0.4 * vDist;
-          // vec3 color = mix(uBaseColor, vec3(1., 1., 0.), smoothstep(0., 0.6, vDist));
-          // gl_FragColor = vec4( 1.0 - 2.0 * ( 1.0 - intensity ) * ( 1.0 - color ), 1.0 );
-					gl_FragColor = vec4(vNormal, 1.);
+          float directionalLightWeighting = max( dot( normalize( vNormal ), uDirLightPos ), 0.0);
+          vec3 lightWeighting = uAmbientLightColor + uDirLightColor * directionalLightWeighting;
+          float intensity = smoothstep( - 0.5, 1.0, pow( length(lightWeighting), 20.0 ) );
+          intensity += length(lightWeighting) * 0.2;
+          intensity = intensity * 0.2 + 0.3 + 0.4 * vDist;
+          vec3 color = mix(uBaseColor, vec3(1., 1., 0.), smoothstep(0., 0.6, vDist));
+          gl_FragColor = vec4( 1.0 - 2.0 * ( 1.0 - intensity ) * ( 1.0 - color ), 1.0 );
         }
       `
 		}),
