@@ -12,7 +12,7 @@ const Torus = () => {
 
 	const intersection = useRef(new Vector3(0, 0, 0))
 
-	const obj = useGLTF('LeePerrySmith.glb')
+	const obj = useGLTF('LeePerrySmith2.glb')
 
 	// console.log('obj ---->', obj.scene.children[0].geometry)
 
@@ -128,8 +128,9 @@ const Torus = () => {
 
 	useFrame(({ clock }) => {
 		if ($material.current) {
-			$material.current.uniforms.uMorph.value = intersection.current
-			// $material.current.uniforms.uMorph.value = $sphere.current.parent.position
+			$material.current.uniforms.uMorph.value.x = MathUtils.lerp($material.current.uniforms.uMorph.value.x, $sphere.current.parent.position.x, .1)
+			$material.current.uniforms.uMorph.value.y = MathUtils.lerp($material.current.uniforms.uMorph.value.y, $sphere.current.parent.position.y, .1)
+			$material.current.uniforms.uMorph.value.z = MathUtils.lerp($material.current.uniforms.uMorph.value.z, $sphere.current.parent.position.z, .1)
 			/* const time = clock.getElapsedTime()
 			const x = Math.sin(time)*1.5
 			const y = Math.sin(time*2.5)*1.5
@@ -155,11 +156,7 @@ const Torus = () => {
 				<torusGeometry args={[1, 0.25, 120, 120]} />
 				<shaderMaterial ref={$material} args={[args]} />
 			</mesh> */}
-			<primitive object={obj.scene.children[0]} onPointerDown={(e) => {
-				// console.log(e.intersections[0].point)
-
-				intersection.current = e.intersections[0].point
-			}}>
+			<primitive object={obj.scene.children[0]}>
 				<shaderMaterial ref={$material} args={[args]} />
 			</primitive>
 		</>
