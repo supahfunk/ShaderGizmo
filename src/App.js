@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { ArcballControls, TransformControls } from '@react-three/drei'
-import { Vector3, Color } from 'three'
+import { ArcballControls, TransformControls, useGLTF } from '@react-three/drei'
+import { Vector3, Color, MathUtils } from 'three'
 import { useControls } from 'leva'
 import './styles.css'
 
@@ -9,6 +9,12 @@ const Torus = () => {
 	const $material = useRef()
 	const $sphere = useRef()
 	const $transform = useRef()
+
+	const intersection = useRef(new Vector3(0, 0, 0))
+
+	const obj = useGLTF('LeePerrySmith.glb')
+
+	// console.log('obj ---->', obj.scene.children[0].geometry)
 
 	const { uThresholdMin, uThresholdMax } = useControls({
 		uThresholdMin: {
@@ -67,7 +73,7 @@ const Torus = () => {
         vec3 worldNormal = normalize ( mat3( modelMatrix[0].xyz, modelMatrix[1].xyz, modelMatrix[2].xyz ) * normal );
 				
 				// Thanks to @MarcoFugaro
-				float offset = 0.01;
+				float offset = 0.001;
 				vec3 tangent = orthogonal(normal);
 				vec3 bitangent = normalize(cross(normal, tangent));
 				vec3 neighbour1 = position + tangent * offset;
@@ -99,13 +105,14 @@ const Torus = () => {
         varying vec3 vRefract;
         
         void main() {
-          float directionalLightWeighting = max( dot( normalize( vNormal ), uDirLightPos ), 0.0);
-          vec3 lightWeighting = uAmbientLightColor + uDirLightColor * directionalLightWeighting;
-          float intensity = smoothstep( - 0.5, 1.0, pow( length(lightWeighting), 20.0 ) );
-          intensity += length(lightWeighting) * 0.2;
-          intensity = intensity * 0.2 + 0.3 + 0.4 * vDist;
-          vec3 color = mix(uBaseColor, vec3(1., 1., 0.), smoothstep(0., 0.6, vDist));
-          gl_FragColor = vec4( 1.0 - 2.0 * ( 1.0 - intensity ) * ( 1.0 - color ), 1.0 );
+          // float directionalLightWeighting = max( dot( normalize( vNormal ), uDirLightPos ), 0.0);
+          // vec3 lightWeighting = uAmbientLightColor + uDirLightColor * directionalLightWeighting;
+          // float intensity = smoothstep( - 0.5, 1.0, pow( length(lightWeighting), 20.0 ) );
+          // intensity += length(lightWeighting) * 0.2;
+          // intensity = intensity * 0.2 + 0.3 + 0.4 * vDist;
+          // vec3 color = mix(uBaseColor, vec3(1., 1., 0.), smoothstep(0., 0.6, vDist));
+          // gl_FragColor = vec4( 1.0 - 2.0 * ( 1.0 - intensity ) * ( 1.0 - color ), 1.0 );
+					gl_FragColor = vec4(vNormal, 1.);
         }
       `
 		}),
@@ -121,7 +128,8 @@ const Torus = () => {
 
 	useFrame(({ clock }) => {
 		if ($material.current) {
-			$material.current.uniforms.uMorph.value = $sphere.current.parent.position
+			$material.current.uniforms.uMorph.value = intersection.current
+			// $material.current.uniforms.uMorph.value = $sphere.current.parent.position
 			/* const time = clock.getElapsedTime()
 			const x = Math.sin(time)*1.5
 			const y = Math.sin(time*2.5)*1.5
@@ -143,10 +151,17 @@ const Torus = () => {
 					<meshBasicMaterial color={'grey'} />
 				</mesh>
 			</TransformControls>
-			<mesh>
+			{/* <mesh>
 				<torusGeometry args={[1, 0.25, 120, 120]} />
 				<shaderMaterial ref={$material} args={[args]} />
-			</mesh>
+			</mesh> */}
+			<primitive object={obj.scene.children[0]} onPointerDown={(e) => {
+				// console.log(e.intersections[0].point)
+
+				intersection.current = e.intersections[0].point
+			}}>
+				<shaderMaterial ref={$material} args={[args]} />
+			</primitive>
 		</>
 	)
 }
@@ -175,7 +190,7 @@ export default function App() {
 			<Canvas
 				className="canvas"
 				camera={{
-					position: [0, -4, 5]
+					position: [0, 2, 5]
 				}}
 			>
 				<ArcballControls
